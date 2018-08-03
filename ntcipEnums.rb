@@ -1,0 +1,642 @@
+#####
+# 1203
+######
+module ENUM_dmsSignType
+  OTHER  = 1
+  BOS  = 2
+  CMS  = 3
+  VMSCHAR  = 4
+  VMSLINE  = 5
+  VMSFULL  = 6
+  PORTABLEOTHER  = 129
+  PORTABLEBOS  = 130
+  PORTABLECMS  = 131
+  PORTABLEVMSCHAR  = 132
+  PORTABLEVMSLINE  = 133
+  PORTABLEVMSFULL  = 134
+end
+module ENUM_dmsLegend
+  NOLEGEND  = 2
+  LEGENDEXISTS  = 3
+end
+module ENUM_dmsBeaconType
+  OTHER  = 1
+  NONE  = 2
+  ONEBEACON  = 3
+  TWOBEACONSYNCFLASH  = 4
+  TWOBEACONSOPPFLASH  = 5
+  FOURBEACONSYNCFLASH  = 6
+  FOURBEACONALTROWFLASH  = 7
+  FOURBEACONALTCOLUMNFLASH  = 8
+  FOURBEACONALTDIAGONALFLASH  = 9
+  FOURBEACONNOSYNCFLASH  = 10
+  ONEBEACONSTROBE  = 11
+  TWOBEACONSTROBE  = 12
+  FOURBEACONSTROBE  = 13
+end
+module ENUM_fontStatus
+  NOTUSED  = 1
+  MODIFYING  = 2
+  CALCULATINGID  = 3
+  READYFORUSE  = 4
+  INUSE  = 5
+  PERMANENT  = 6
+  MODIFYREQ  = 7
+  READYFORUSEREQ  = 8
+  NOTUSEDREQ  = 9
+  UNMANAGEDREQ  = 10
+  UNMANAGED  = 11
+end
+module ENUM_defaultJustificationLine
+  LEFT = 2
+  CENTER = 3
+  RIGHT = 4
+  FULL = 5
+end
+module ENUM_defaultJustificationLineActivate
+  LEFT = 2
+  CENTER = 3
+  RIGHT = 4
+  FULL = 5
+end
+module ENUM_defaultJustificationPage
+  TOP = 2
+  MIDDLE = 3
+  BOTTOM = 4
+end
+module ENUM_defaultJustificationPageActivate
+  TOP = 2
+  MIDDLE = 3
+  BOTTOM = 4
+end
+module ENUM_defaultCharacterSet
+  OTHER  = 1
+  EIGHTBIT  = 2
+end
+module ENUM_dmsColorScheme
+  MONOCHROME1BIT  = 1
+  MONOCHROME8BIT  = 2
+  COLORCLASSIC  = 3
+  COLOR24BIT = 4
+end
+module ENUM_dmsMessageMemoryType
+  PERMANENT  = 2
+  CHANGEABLE  = 3
+  VOLATILE  = 4
+  CURRENTBUFFER  = 5
+  SCHEDULE  = 6
+  BLANK  = 7
+end
+module ENUM_dmsMessageStatus
+  NOTUSED  = 1
+  MODIFYING  = 2
+  VALIDATING  = 3
+  VALID  = 4
+  ERROR  = 5
+  MODIFYREQ  = 6
+  VALIDATEREQ  = 7
+  NOTUSEDREQ  = 8
+end
+module ENUM_dmsValidateMessageError
+  OTHER  = 1
+  NONE  = 2
+  BEACONS  = 3
+  PIXELSERVICE  = 4
+  SYNTAXMULTI  = 5
+end
+module ENUM_dmsControlMode
+  LOCAL  = 2
+  CENTRAL  = 4
+  CENTRALOVERRIDE  = 5
+end
+module ENUM_dmsMsgSourceMode
+  OTHER  = 1
+  LOCAL  = 2
+  EXTERNAL  = 3
+  CENTRAL  = 8
+  TIMEBASEDSCHEDULER  = 9
+  POWERRECOVERY  = 10
+  RESET  = 11
+  COMMLOSS  = 12
+  POWERLOSS  = 13
+  ENDDURATION  = 14
+end
+module ENUM_dmsMemoryMgmt
+  NORMAL  = 2
+  CLEARCHANGEABLEMESSAGES  = 3
+  CLEARVOLATILEMESSAGES  = 4
+end
+module ENUM_dmsActivateMsgError
+  OTHER  = 1
+  NONE  = 2
+  PRIORITY  = 3
+  MESSAGESTATUS  = 4
+  MESSAGEMEMORYTYPE  = 5
+  MESSAGENUMBER  = 6
+  MESSAGECRC  = 7
+  SYNTAXMULTI  = 8
+  LOCALMODE  = 9
+  CENTRALMODE  = 10
+  CENTRALOVERRIDEMODE  = 11
+end
+module ENUM_dmsMultiSyntaxError
+  OTHER  = 1
+  NONE  = 2
+  UNSUPPORTEDTAG  = 3
+  UNSUPPORTEDTAGVALUE  = 4
+  TEXTTOOBIG  = 5
+  FONTNOTDEFINED  = 6
+  CHARACTERNOTDEFINED  = 7
+  FIELDDEVICENOTEXIST  = 8
+  FIELDDEVICEERROR  = 9
+  FLASHREGIONERROR  = 10
+  TAGCONFLICT  = 11
+  TOOMANYPAGES  = 12
+  FONTVERSIONID  = 13
+  GRAPHICID  = 14
+  GRAPHICNOTDEFINED  = 15
+end
+module ENUM_dmsActivateMessageState
+  FASTACTIVATIONSIGN = 1
+  SLOWACTIVATEDOK = 2
+  SLOWACTIVATEDERROR = 3
+  SLOWACTIVATING = 4
+end
+module ENUM_dmsIllumControl
+  OTHER  = 1
+  PHOTOCELL  = 2
+  TIMER  = 3
+  MANUAL  = 4
+  MANUALDIRECT  = 5
+  MANUALINDEXED  = 6
+end
+module ENUM_dmsIllumBrightnessValuesError
+  OTHER  = 1
+  NONE  = 2
+  PHOTOCELLGAP  = 3
+  NEGATIVESLOPE  = 4
+  TOOMANYLEVELS  = 5
+  INVALIDDATA  = 6
+end
+module ENUM_dmsPowerStatus
+  NOERROR  = 2
+  POWERFAIL  = 3
+  VOLTAGEOUTOFSPEC  = 4
+  CURRENTOUTOFSPEC  = 5
+end
+module ENUM_dmsPowerType
+  OTHER  = 1
+  ACLINE  = 2
+  GENERATOR  = 3
+  SOLAR  = 4
+  BATTERY_UPS  = 5
+  LEDSUPPLY  = 6
+  LAMPSUPPLY  = 7
+end
+module ENUM_fanTestActivation
+  NOTEST  = 2
+  TEST  = 3
+end
+module ENUM_dmsClimateCtrlErrorStatus
+  NOERROR  = 2
+  FAIL  = 3
+  NOTMONITORED  = 4
+end
+module ENUM_dmsClimateCtrlTestActivation
+  NOTEST = 2
+  TEST = 3
+  TESTABORTED = 4
+end
+module ENUM_dmsClimateCtrlType
+  OTHER  = 1
+  FANSVENTILATION  = 2
+  FANSSIGNFACE  = 3
+  DEHUMIDIFIER  = 4
+  HEATCABINET  = 5
+  HEATHOUSING  = 6
+  HEATSIGNFACE  = 7
+  AIRCONDITIONINGCABINET  = 8
+  AIRCONDITIONINGHOUSING  = 9
+end
+module ENUM_pixelFailureDetectionType
+  PIXELTEST  = 2
+  MESSAGEDISPLAY = 3
+end
+module ENUM_pixelTestActivation
+  NOTEST  = 2
+  TEST  = 3
+  CLEARTABLE  = 4
+end
+module ENUM_lampTestActivation
+  NOTEST  = 2
+  TEST  = 3
+end
+module ENUM_dmsLampStatus
+  NOERROR  = 2
+  STUCKOFF  = 3
+  STUCKON  = 4
+end
+module ENUM_dmsDrumStatus
+  OTHER  = 1
+  NOERROR  = 2
+  INTERLOCKERROR  = 3
+  STUCKERROR  = 4
+  POSITIONERROR  = 5
+  POSITIONUNKNOWNERROR  = 6
+end
+module ENUM_dmsLightSensorStatus
+  NOERROR  = 2
+  FAIL  = 3
+end
+module ENUM_dmsHumiditySensorStatus
+  NOERROR  = 2
+  FAIL  = 3
+end
+module ENUM_dmsTempSensorStatus
+  OTHER  = 1
+  NOERROR  = 2
+  FAIL  = 3
+end
+module ENUM_powerSource
+  OTHER  = 1
+  POWERSHUTDOWN  = 2
+  NOSIGNPOWER  = 3
+  ACLINE  = 4
+  GENERATOR  = 5
+  SOLAR  = 6
+  BATTERY_UPS  = 7
+end
+module ENUM_dmsGraphicType
+  MONOCHROME1BIT = 1
+  MONOCHROME8BIT = 2
+  COLORCLASSIC = 3
+  COLOR24BIT = 4
+end
+module ENUM_dmsGraphicStatus
+  NOTUSED  = 1
+  MODIFYING  = 2
+  CALCULATINGID  = 3
+  READYFORUSE  = 4
+  INUSE  = 5
+  PERMANENT  = 6
+  MODIFYREQ  = 7
+  READYFORUSEREQ  = 8
+  NOTUSEDREQ  = 9
+end
+#####
+# 1201
+######
+module ENUM_moduleType
+  OTHER  = 1
+  HARDWARE  = 2
+  SOFTWARE  = 3
+end
+module ENUM_dbCreateTransaction
+  TRANSACTION  = 2
+  VERIFY  = 3
+  DONE  = 6
+end
+module ENUM_dbErrorType
+  NOSUCHNAME  = 2
+  BADVALUE  = 3
+  READONLY  = 4
+  GENERROR  = 5
+  UPDATEERROR  = 6
+  NOERROR  = 7
+end
+module ENUM_dbVerifyStatus
+  DONEWITHERROR  = 2
+  DONEWITHNOERROR  = 3
+end
+module ENUM_globalDaylightSaving
+  DISABLEDST  = 2
+  ENABLEUSDST  = 3
+  ENABLEEUROPEDST  = 4
+  ENABLEAUSTRALIADST  = 5
+  ENABLETASMANIADST  = 6
+  ENABLEEGYPTDST  = 7
+  ENABLENAMIBIADST  = 8
+  ENABLEIRAQDST  = 9
+  ENABLEMANGOLIADST  = 10
+  ENABLEIRANDST  = 11
+  ENABLEFIJIDST  = 12
+  ENABLENEWZEALANDDST  = 13
+  ENABLETONGADST  = 14
+  ENABLECUBADST  = 15
+  ENABLEBRAZILDST  = 16
+  ENABLECHILEDST  = 17
+  ENABLEFALKLANDSDST  = 18
+  ENABLEPARAGUAYDST  = 19
+  ENABLEDAYLIGHTSAVINGNODE  = 20
+end
+module ENUM_dstBeginMonth
+  FEBRUARY  = 2
+  MARCH  = 3
+  APRIL  = 4
+  MAY  = 5
+  JUNE  = 6
+  JULY  = 7
+  AUGUST  = 8
+  SEPTEMBER  = 9
+  OCTOBER  = 10
+  NOVEMBER  = 11
+  DECEMBER  = 12
+  ABSOLUTE  = 13
+  DISABLED  = 14
+end
+module ENUM_dstBeginOccurrences
+  SECOND  = 2
+  THIRD  = 3
+  FOURTH  = 4
+  LAST  = 5
+  SECONDLAST  = 6
+  THIRDLAST  = 7
+  FOURTHLAST  = 8
+  SPECIFICDAYOFMONTH  = 9
+end
+module ENUM_dstBeginDayOfWeek
+  MONDAY  = 2
+  TUESDAY  = 3
+  WEDNESDAY  = 4
+  THURSDAY  = 5
+  FRIDAY  = 6
+  SATURDAY  = 7
+end
+module ENUM_dstEndMonth
+  FEBRUARY  = 2
+  MARCH  = 3
+  APRIL  = 4
+  MAY  = 5
+  JUNE  = 6
+  JULY  = 7
+  AUGUST  = 8
+  SEPTEMBER  = 9
+  OCTOBER  = 10
+  NOVEMBER  = 11
+  DECEMBER  = 12
+end
+module ENUM_dstEndOccurrences
+  SECOND  = 2
+  THIRD  = 3
+  FOURTH  = 4
+  LAST  = 5
+  SECONDLAST  = 6
+  THIRDLAST  = 7
+  FOURTHLAST  = 8
+  SPECIFICDAYOFMONTH  = 9
+end
+module ENUM_dstEndDayOfWeek
+  MONDAY  = 2
+  TUESDAY  = 3
+  WEDNESDAY  = 4
+  THURSDAY  = 5
+  FRIDAY  = 6
+  SATURDAY  = 7
+end
+module ENUM_auxIOv2PortType
+  OTHER  = 1
+  ANALOG  = 2
+  DIGITAL  = 3
+end
+module ENUM_auxIOv2PortDirection
+  OUTPUT  = 1
+  INPUT  = 2
+  BIDIRECTIONAL  = 3
+end
+module ENUM_auxIOPortType
+  OTHER  = 1
+  ANALOG  = 2
+  DIGITAL  = 3
+end
+module ENUM_auxIOPortDirection
+  OUTPUT  = 1
+  INPUT  = 2
+  BIDIRECTIONAL  = 3
+end
+#####
+# 1204
+######
+module ENUM_essNtcipCategory
+  PERMANENT  = 2
+  TRANSPORTABLE  = 3
+  MOBILE  = 4
+end
+module ENUM_essWindSituation
+  UNKNOWN  = 2
+  CALM  = 3
+  LIGHTBREEZE  = 4
+  MODERATEBREEZE  = 5
+  STRONGBREEZE  = 6
+  GALE  = 7
+  MODERATEGALE  = 8
+  STRONGGALE  = 9
+  STORMWINDS  = 10
+  HURRICANEFORCEWINDS  = 11
+  GUSTYWINDS  = 12
+end
+module ENUM_windSensorSituation
+  UNKNOWN  = 2
+  CALM  = 3
+  LIGHTBREEZE  = 4
+  MODERATEBREEZE  = 5
+  STRONGBREEZE  = 6
+  GALE  = 7
+  MODERATEGALE  = 8
+  STRONGGALE  = 9
+  STORMWINDS  = 10
+  HURRICANEFORCEWINDS  = 11
+  GUSTYWINDS  = 12
+end
+module ENUM_essPrecipYesNo
+  NOPRECIP  = 2
+  ERROR  = 3
+end
+module ENUM_essPrecipSituation
+  UNKNOWN  = 2
+  NOPRECIPITATION  = 3
+  UNIDENTIFIEDSLIGHT  = 4
+  UNIDENTIFIEDMODERATE  = 5
+  UNIDENTIFIEDHEAVY  = 6
+  SNOWSLIGHT  = 7
+  SNOWMODERATE  = 8
+  SNOWHEAVY  = 9
+  RAINSLIGHT  = 10
+  RAINMODERATE  = 11
+  RAINHEAVY  = 12
+  FROZENPRECIPITATIONSLIGHT  = 13
+  FROZENPRECIPITATIONMODERATE  = 14
+  FROZENPRECIPITATIONHEAVY  = 15
+end
+module ENUM_essCloudSituation
+  CLOUDY  = 2
+  PARTLYCLOUDY  = 3
+  MOSTLYCLEAR  = 4
+  CLEAR  = 5
+end
+module ENUM_essVisibilitySituation
+  UNKNOWN  = 2
+  CLEAR  = 3
+  FOGNOTPATCHY  = 4
+  PATCHYFOG  = 5
+  BLOWINGSNOW  = 6
+  SMOKE  = 7
+  SEASPRAY  = 8
+  VEHICLESPRAY  = 9
+  BLOWINGDUSTORSAND  = 10
+  SUNGLARE  = 11
+  SWARMSOFINSECTS  = 12
+end
+module ENUM_essPavementType
+  UNKNOWN  = 2
+  ASPHALT  = 3
+  OPENGRADEDASPHALT  = 4
+  CONCRETE  = 5
+  STEELBRIDGE  = 6
+  CONCRETEBRIDGE  = 7
+  ASPHALTOVERLAYBRIDGE  = 8
+  TIMBERBRIDGE  = 9
+end
+module ENUM_essPavementSensorType
+  CONTACTPASSIVE  = 2
+  CONTACTACTIVE  = 3
+  INFRARED  = 4
+  RADAR  = 5
+  VIBRATING  = 6
+  MICROWAVE  = 7
+  LASER  = 8
+end
+module ENUM_essSurfaceStatus
+  ERROR  = 2
+  DRY  = 3
+  TRACEMOISTURE  = 4
+  WET  = 5
+  CHEMICALLYWET  = 6
+  ICEWARNING  = 7
+  ICEWATCH  = 8
+  SNOWWARNING  = 9
+  SNOWWATCH  = 10
+  ABSORPTION  = 11
+  DEW  = 12
+  FROST  = 13
+  ABSORPTIONATDEWPOINT  = 14
+end
+module ENUM_essSurfaceBlackIceSignal
+  NOICE  = 2
+  BLACKICE  = 3
+  DETECTORERROR  = 4
+end
+module ENUM_essPavementSensorError
+  NONE  = 2
+  NORESPONSE  = 3
+  CUTCABLE  = 4
+  SHORTCIRCUIT  = 5
+  DIRTYLENS  = 6
+end
+module ENUM_essSubSurfaceType
+  UNKNOWN  = 2
+  CONCRETE  = 3
+  ASPHALT  = 4
+  OPENGRADEDASPHALT  = 5
+  GRAVEL  = 6
+  CLAY  = 7
+  LOAM  = 8
+  SAND  = 9
+  PERMAFROST  = 10
+  VARIOUSAGGREGATES  = 11
+  AIR  = 12
+end
+module ENUM_essSubSurfaceSensorError
+  NONE  = 2
+  NORESPONSE  = 3
+  CUTCABLE  = 4
+  SHORTCIRCUIT  = 5
+end
+module ENUM_essMobileObservationGroundState
+  DRY  = 2
+  MOIST  = 3
+  WET  = 4
+  FLOODED  = 5
+  FROZEN  = 6
+  GLAZE  = 7
+  DUSTYSANDY  = 8
+  VERYDRY  = 9
+  ICY  = 10
+  PATCHYWETSNOW  = 11
+  MODERATEWETSNOWCOVER  = 12
+  FULLWETSNOWCOVER  = 13
+  PATCHYDRYSNOW  = 14
+  MODERATEDRYSNOWCOVER  = 15
+  FULLDRYSNOWCOVER  = 16
+  DRIFTINGSNOW  = 17
+  UNKNOWN  = 18
+end
+module ENUM_essMobileObservationPavement
+  DRY  = 2
+  WET  = 3
+  PUDDLES  = 4
+  SHALLOWSTANDINGWATER  = 5
+  SHALLOWFLOWINGWATER  = 6
+  DEEPSTANDINGWATER  = 7
+  DEEPFLOWINGWATER  = 8
+  DUSTINGFRESHSNOW  = 9
+  MODERATEFRESHSNOW  = 10
+  DEEPFRESHSNOW  = 11
+  PLOWEDSNOW  = 12
+  SLUSH  = 13
+  PACKEDSNOWPATCHES  = 14
+  PACKEDSNOW  = 15
+  LIGHTSNOWDRIFTS  = 16
+  MODERATESNOWDRIFTS  = 17
+  HEAVYSNOWDRIFTS  = 18
+  FROST  = 19
+  ICEPATCHES  = 20
+  MODERATELYICY  = 21
+  HEAVYICING  = 22
+  BLACKICE  = 23
+  SHEETICE  = 24
+  FROZENSLUSH  = 25
+end
+module ENUM_essPaveTreatProductType
+  SAND  = 2
+  DIRT  = 3
+  GRAVEL  = 4
+  CINDERS  = 5
+  WATER  = 6
+  ENHANCEDSALTS  = 7
+  NACL  = 8
+  CACL  = 9
+  MGCL  = 10
+  CMA  = 11
+  KAC  = 12
+  NAFORMATE  = 13
+  NAA  = 14
+end
+module ENUM_essPaveTreatProductForm
+  DRY  = 2
+  PREWET  = 3
+  LIQUID  = 4
+end
+module ENUM_ptsOperationalMode
+  MANUAL  = 2
+  AUTOMATIC  = 3
+end
+module ENUM_ptsCommandState
+  INACTIVE  = 2
+  ACTIVATE  = 3
+end
+module ENUM_ptsSprayerState
+  INACTIVE  = 2
+  ACTIVE  = 3
+end
+module ENUM_ptsError
+  OK  = 2
+  GENERICERROR  = 3
+  TANKLOW  = 4
+end
+module ENUM_essSnapshotCameraCommand
+  CAPTURESNAPSHOT = 2
+end
+module ENUM_essSnapshotCameraError
+  HARDWARE = 2
+  INSUFFICIENTMEMORY = 3
+end
