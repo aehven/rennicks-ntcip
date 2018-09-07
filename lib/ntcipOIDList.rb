@@ -1,4 +1,4 @@
-require './snmpAccess.rb'
+require 'snmpAccess'
 module NTCIPOIDList
   class TheList
     def initialize

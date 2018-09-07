@@ -1,6 +1,5 @@
-$LOAD_PATH.unshift(File.dirname(__FILE__) + "/../lib")
 require 'snmp'
-require './ntcipOIDList.rb'
+require 'ntcipOIDList'
 include SNMP
 
 module SNMPAccess
@@ -33,7 +32,7 @@ module SNMPAccess
     @@port = 161
     @@host = 'localhost'
     @@modules = ["NTCIP-1203-MIB","NTCIP-1201-MIB","NTCIP1204-2005-MIB"]
-    @@modulesdir = './mibs'
+    @@modulesdir = File.expand_path(File.dirname(__FILE__) +"/mibs")
     @@community = 'administrator'
     @@version = :SNMPv1
     @@maxVarbind = 5
@@ -75,7 +74,6 @@ module SNMPAccess
         #puts @@community
         #puts @@modules
         #puts @@version
-        responses = []
         nMaxRequests = @dataArray.size/@@maxVarbind
         if (nMaxRequests * @@maxVarbind) < @dataArray.size
           nMaxRequests += 1
@@ -96,14 +94,13 @@ module SNMPAccess
                 oidArray << c.oidValue
               end
           end
-          response = snmp.get(oidArray)
-          responses << response
+          responsePDU = snmp.get(oidArray)
           #####
           # check error_index
           # to see which varbind caused the error
           #####
-          if(:noError == responses[nRequests].error_status)
-            responses[nRequests].each_varbind { |vb| 
+          if(:noError == responsePDU.error_status)
+            responsePDU.each_varbind { |vb| 
               if nil != vb 
                 value=vb.value
                 c = @dataArray[nDataArrayIndex]
@@ -117,7 +114,7 @@ module SNMPAccess
           }
           else
             @dataArray.each { |c| 
-              c.set_pduError(responses[nRequests].error_status)
+              c.set_pduError(responsePDU.error_status)
               c.set_accessError(:pduError)
             }
           end
@@ -125,20 +122,20 @@ module SNMPAccess
         #####
         # return the response
         ######
-        responses
+        responsePDU.error_status;
       end
       rescue SNMP::RequestTimeout
         #puts "timeout"
         @dataArray.each { |c|
         c.set_accessError(:timeOut)
         }
-        responses
+        :timeOut
       rescue => exc
         puts exc.message
         @dataArray.each { |c|
         c.set_accessError(:pduError)
         }
-        responses
+        :pduError
       end
     end
     def set
@@ -158,26 +155,25 @@ module SNMPAccess
           vbArray << c.varbind(snmp:snmp)
         }
         dataArrayEnumerator = @dataArray.each
-        response = snmp.set(vbArray)
+        responsePDU = snmp.set(vbArray)
         #####
         # check error_index
         # to see which varbind caused the error
         #####
-        if(:noError == response.error_status)
-          response.each_varbind { |vb| 
+        if(:noError == responsePDU.error_status)
+          responsePDU.each_varbind { |vb| 
           c = dataArrayEnumerator.next
           c.set_pduError(:noError)
           c.set_accessError(:success)
           c.set_lastUpdateTime
         }
-        :noError
         else
           @dataArray.each { |c| 
             c.set_pduError(response.error_status)
             c.set_accessError(:pduError)
           }
-        :snmpError
         end
+       responsePDU.error_status;
       end
       rescue SNMP::RequestTimeout
         #puts "timeout"

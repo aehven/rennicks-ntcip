@@ -1,16 +1,14 @@
-require './ntcipOIDList.rb'
-require './ntcipEnums.rb'
-require './bmp.rb'
+require 'ntcipOIDList'
+require 'ntcipEnums'
+require 'bmp'
 
 module NTCIPAccess
-    RESULT_CODE = {
-      0 => :success,
-      1 => :failure,
-    }
     RESULT_MESSAGE = {
       0 => :noError,
       1 => :invalidMessageNumber,
-      2 => :cantWrite
+      3 => :invalidMessageCRC,
+      4 => :invalidGraphicIndex,
+      5 => :cantWrite
     }
   class SNMPError < StandardError
   end
@@ -57,59 +55,10 @@ module NTCIPAccess
       SNMPAccess::AccessList.class_variable_set(:@@maxVarbind, 6)
       end
     def get oidList
-      status = :noError
-      responses = []
-      responses = oidList.get
-      responses.each { |response|
-      status = response.error_status
-      if nil == response
-        case oidList[0].get_accessError
-        when :notTransfered
-          puts "Not Transferred"
-          raise SNMPError, "SNMP Not Transferred"
-        when :pduError
-          puts "PDU errror"
-          raise SNMPError, "SNMP Error PDU"
-        when :timeOut
-          puts "Time Out"
-          raise SNMPError, "SNMP Error Time Out"
-        end
-      else
-        puts "getter stat "+response.error_status.to_s+" index "+response.error_index.to_s
-        status = response.error_status
-        if :noError != response.error_status
-          if 0 == response.error_index
-          raise SNMPError, "SNMP Error "+response.error_status.to_s + " transaction error "
-          else
-          raise SNMPError, "SNMP Error "+response.error_status.to_s + " index " + response.error_index.to_s + "individual error "
-          end
-        end
-      end
-      }
-      status
+      oidList.get
     end
     def set oidList
-      status = oidList.set
-      case status
-      when :notTransfered
-          puts "Not Transferred"
-          raise SNMPError, "SNMP Not Transferred"
-      when :timeOut
-          puts "Time Out"
-          raise SNMPError, "SNMP Error Time Out"
-      when :pduError
-          puts "PDU errror"
-          raise SNMPError, "SNMP Error PDU"
-      when :snmpError
-          puts "SNMP Error"
-          raise SNMPError, "SNMP Error "+oidList[0].get_pduError.to_s
-      when :noError
-          puts "No Error"
-      else
-          puts "Unknown"
-          raise SNMPError, "SNMP Error Unknown"
-      end
-      status
+      oidList.set
     end
   end
   class NTCIPGraphics < NTCIPAccess
@@ -126,7 +75,8 @@ module NTCIPAccess
       getter.add(oidName: "dmsGraphicMaxSize")
       getter.add(oidName: "availableGraphicMemory")
       getter.add(oidName: "dmsGraphicBlockSize")
-      if :noError ==  get(getter)
+      status = get(getter)
+      if :noError ==  status
         @signWidth = getter["vmsSignWidthPixels"].value.to_i
         @signHeight = getter["vmsSignHeightPixels"].value.to_i
         @graphicMaxEntries = getter["dmsGraphicMaxEntries"].value.to_i
@@ -142,6 +92,7 @@ module NTCIPAccess
         #puts "graphicAvailableMemory: " +@graphicAvailableMemory.to_s
         #puts "graphicBlockSize: " + @graphicBlockSize.to_s
       end
+      status
     end
     def graphicName
        @graphicName
@@ -220,7 +171,8 @@ module NTCIPAccess
     def get_graphic(graphicIndex: nil)
       @graphicIndex = graphicIndex
       #puts "graphicIndex " + graphicIndex.to_s
-      if graphicIndex <= @graphicMaxEntries
+      status = :invalidGraphicIndex
+      if (graphicIndex > 0) && (graphicIndex <= @graphicMaxEntries)
            getter = SNMPAccess::AccessList.new @oidList
            getter.add(oidName: "dmsGraphicNumber", index1: graphicIndex)
            getter.add(oidName: "dmsGraphicName", index1: graphicIndex)
@@ -231,7 +183,8 @@ module NTCIPAccess
            getter.add(oidName: "dmsGraphicTransparentEnabled", index1: graphicIndex)
            getter.add(oidName: "dmsGraphicTransparentColor", index1: graphicIndex)
            getter.add(oidName: "dmsGraphicStatus", index1: graphicIndex)
-           if :noError ==  get(getter)
+           status =  get(getter)
+           if :noError ==  status
               @graphicNumber = getter["dmsGraphicNumber", graphicIndex].value.to_i
               @graphicName = getter["dmsGraphicName", graphicIndex].value.to_s
               @graphicHeight = getter["dmsGraphicHeight", graphicIndex].value.to_i
@@ -294,20 +247,17 @@ module NTCIPAccess
                 getter = SNMPAccess::AccessList.new @oidList
                 getter.add(oidName: "dmsGraphicBlockBitmap", index1: graphicIndex, index2: i)
                 block = []
-                if :noError ==  get(getter)
+                status =  get(getter)
+                if :noError ==  status
                   block = getter["dmsGraphicBlockBitmap", graphicIndex, i].value
                   @graphicBitmap << block
                 else
-                  return :failure
+                  return status
                 end
               end
-              :success
-           else
-              :failure
            end
-      else
-        :failure
       end
+      status
 
     end
     def set_graphic(bmpFile: nil, imageArray: nil, graphicIndex:, graphicNumber: nil, graphicName: "", graphicHeight: @signHeight, graphicWidth: @signWidth, graphicType: ENUM_dmsColorScheme::MONOCHROME1BIT, transparentEnabled: 0, transparentColor: [1, 0, 0])
@@ -336,12 +286,15 @@ module NTCIPAccess
       ######
       # set status to modifying
       ######
+      status = :invalidGraphicIndex
+      if (graphicIndex > 0) && (graphicIndex <= @graphicMaxEntries)
         #####
         # set the status to modifying
         #####
         setter = SNMPAccess::AccessList.new @oidList
         setter.add(oidName: "dmsGraphicStatus", value: ENUM_dmsGraphicStatus::MODIFYREQ, index1: graphicIndex)
-        if :noError ==  set(setter)
+        status =  set(setter)
+        if :noError ==  status
           #####
           # set the
           # graphic number
@@ -360,7 +313,8 @@ module NTCIPAccess
           setter.add(oidName: "dmsGraphicType", value: @graphicType, index1: graphicIndex)
           setter.add(oidName: "dmsGraphicTransparentEnabled", value: @graphicTransparentEnabled, index1: graphicIndex)
           setter.add(oidName: "dmsGraphicTransparentColor", value: @graphicTransparentColor, index1: graphicIndex)
-          if :noError ==  set(setter)
+          status =  set(setter)
+          if :noError == status
             #####
             # now, set the bitmap
             ######
@@ -392,32 +346,46 @@ module NTCIPAccess
               setter = SNMPAccess::AccessList.new @oidList
               #setter.add(oidName: "dmsGraphicBlockBitmap", value: thisBlock, index1: graphicIndex, index2: i+1)
               setter.add(oidName: "dmsGraphicBlockBitmap", value: tb2, index1: graphicIndex, index2: i+1)
-              if :noError !=  set(setter)
+              status = set(setter)
+              if :noError !=  status
                 puts "Error setting block"
+                break;
               end
             end
 
-            #####
-            # set ready for use
-            #####
-            setter = SNMPAccess::AccessList.new @oidList
-            setter.add(oidName: "dmsGraphicStatus", value: ENUM_dmsGraphicStatus::READYFORUSEREQ, index1: graphicIndex)
-            if :noError !=  set(setter)
-              puts "Error setting Ready For Use"
+            if :noError == status
+               #####
+               # set ready for use
+               #####
+               setter = SNMPAccess::AccessList.new @oidList
+               setter.add(oidName: "dmsGraphicStatus", value: ENUM_dmsGraphicStatus::READYFORUSEREQ, index1: graphicIndex)
+               if :noError !=  set(setter)
+                 puts "Error setting Ready For Use"
+               end
             end
 
-            #####
-            # check status
-            # throw an error if not ready for use
-            ######
-            getter = SNMPAccess::AccessList.new @oidList
-            getter.add(oidName: "dmsGraphicNumber", index1: graphicIndex)
-            getter.add(oidName: "dmsGraphicStatus", index1: graphicIndex)
+            if :noError == status
+               #####
+               # check status
+               # throw an error if not ready for use
+               ######
+               getter = SNMPAccess::AccessList.new @oidList
+               getter.add(oidName: "dmsGraphicStatus", index1: graphicIndex)
+               status =  get(getter)
+               if :noError == status
+                  if ENUM_dmsGraphicStatus::READYFORUSE != graphicStatus = getter["dmsGraphicStatus", graphicIndex].value.to_i
+                     status = :snmpError
+                  else
+                     status = :noError
+                  end
+               end
+            end
           end
         end
+      end
+      status
     end
     def delete_graphic( graphicIndex:)
-      retVal = :success
 
       if nil == graphicIndex
         graphicIndex = @graphicIndex
@@ -428,13 +396,7 @@ module NTCIPAccess
       ######
       setter = SNMPAccess::AccessList.new @oidList
       setter.add(oidName: "dmsGraphicStatus", value: ENUM_dmsGraphicStatus::NOTUSEDREQ, index1: graphicIndex)
-      if :noError ==  set(setter)
-        puts "Delete successful"
-      else
-        puts "Delete failure"
-        retVal = :failure
-      end
-     retVal
+      status =  set(setter)
     end
   end
   class NTCIPMessage < NTCIPAccess
@@ -451,7 +413,8 @@ module NTCIPAccess
       getter.add(oidName: "dmsNumVolatileMsg")
       getter.add(oidName: "dmsMaxVolatileMsg")
       getter.add(oidName: "dmsFreeVolatileMemory")
-      if :noError ==  get(getter)
+      status =  get(getter)
+      if :noError ==  status
         @numPermanentMsg = getter["dmsNumPermanentMsg"].value.to_i
         @numChangeableMsg = getter["dmsNumChangeableMsg"].value.to_i
         @maxChangeableMsg = getter["dmsMaxChangeableMsg"].value.to_i
@@ -466,6 +429,8 @@ module NTCIPAccess
         #puts "numVolatileMsg: " + @numVolatileMsg.to_s
         #puts "maxVolatileMsg: " +@maxVolatileMsg.to_s
         #puts "freeVolatileMemory: " + @freeVolatileMemory.to_s
+      else
+         raise SNMPError, "Can't get info "+ status.to_s
       end
     end
     def messageMemoryType
@@ -532,7 +497,8 @@ module NTCIPAccess
       getter.add(oidName: "dmsMessagePixelService", index1: @messageMemoryType, index2: @messageNumber)
       getter.add(oidName: "dmsMessageRunTimePriority", index1: @messageMemoryType, index2: @messageNumber)
       getter.add(oidName: "dmsMessageStatus", index1: @messageMemoryType, index2: @messageNumber)
-      if :noError ==  get(getter)
+      status = get(getter)
+      if :noError ==  status
          @messageMultiString = getter["dmsMessageMultiString", @messageMemoryType, @messageNumber].value.to_s
          @messageOwner = getter["dmsMessageOwner", @messageMemoryType, @messageNumber].value.to_s
          @messageCRC = getter["dmsMessageCRC", @messageMemoryType, @messageNumber].value.to_i
@@ -547,10 +513,8 @@ module NTCIPAccess
          #puts "messagePixelService " + @messagePixelService.to_s
          #puts "messageRunTimePriority " + @messageRunTimePriority.to_s
          #puts "messageStatus " + @messageStatus.to_s
-         :success
-      else
-        :failure
       end
+      status
     end
     def set_message(messageMemoryType:, messageNumber:, messageMultiString: "", messageOwner: "local", messageBeacon: 0, messagePixelService: 0, messageRunTimePriority: 0)
       @messageMemoryType = messageMemoryType
@@ -584,7 +548,8 @@ module NTCIPAccess
       #####
       setter = SNMPAccess::AccessList.new @oidList
       setter.add(oidName: "dmsMessageStatus", value: ENUM_dmsMessageStatus::MODIFYREQ, index1: @messageMemoryType, index2: @messageNumber)
-      if :noError ==  set(setter)
+      status =  set(setter)
+      if :noError ==  status
         #####
         # now set the message details
         #####
@@ -594,35 +559,33 @@ module NTCIPAccess
         setter.add(oidName: "dmsMessageBeacon", value: @messageBeacon, index1: @messageMemoryType, index2: @messageNumber)
         setter.add(oidName: "dmsMessagePixelService", value: @messagePixelService, index1: @messageMemoryType, index2: @messageNumber)
         setter.add(oidName: "dmsMessageRunTimePriority", value: @messageRunTimePriority, index1: @messageMemoryType, index2: @messageNumber)
-        if :noError ==  set(setter)
+        status =  set(setter)
+        if :noError == status
           #####
           # set the status to validating
           #####
             setter = SNMPAccess::AccessList.new @oidList
             setter.add(oidName: "dmsMessageStatus", value: ENUM_dmsMessageStatus::VALIDATEREQ, index1: @messageMemoryType, index2: @messageNumber)
-            if :noError ==  set(setter)
+            status =  set(setter)
+            if :noError ==  status
               #####
               # get the CRC and Status
               #####
               getter = SNMPAccess::AccessList.new @oidList
               getter.add(oidName: "dmsMessageStatus", index1: @messageMemoryType, index2: @messageNumber)
               getter.add(oidName: "dmsMessageCRC", index1: @messageMemoryType, index2: @messageNumber)
-              if :noError ==  get(getter)
+              status =  get(getter)
+              if :noError ==  status
                 @messageCRC = getter["dmsMessageCRC", @messageMemoryType, @messageNumber].value.to_i
                 @messageStatus = getter["dmsMessageStatus", @messageMemoryType, @messageNumber].value.to_i
-              else
-                :failure
               end
-            else
-              :failure
             end
         end
-      else
-        :failure
       end
+      status
     end
     def activate_message( messageMemoryType: nil, messageNumber: nil, messageCRC: nil, duration: nil, activatePriority: nil, sourceAddress: nil)
-      retValues = [:success, ENUM_dmsActivateMsgError::NONE, ENUM_dmsMultiSyntaxError::NONE]
+      retValues = [:snmpError, ENUM_dmsActivateMsgError::NONE, ENUM_dmsMultiSyntaxError::NONE]
       if nil == messageMemoryType
         messageMemoryType = @messageMemoryType
       end
@@ -639,11 +602,12 @@ module NTCIPAccess
       if nil == messageCRC
         getter = SNMPAccess::AccessList.new @oidList
         getter.add(oidName: "dmsMessageCRC", index1: messageMemoryType, index2: messageNumber)
-        if :noError ==  get(getter)
+        status = get(getter)
+        if :noError == status
           messageCRC = getter["dmsMessageCRC", messageMemoryType, messageNumber].value.to_i
         end
         if nil == messageCRC
-          retValues[0] = :failure
+          retValues[0] = :invalidMessageCRC
           return retValues
         end
       end
@@ -651,7 +615,8 @@ module NTCIPAccess
 
      setter = SNMPAccess::AccessList.new @oidList
      setter.add(oidName: "dmsActivateMessage", value: messageActivationCode.get_value, index1: messageMemoryType, index2: messageNumber)
-      if :noError ==  set(setter)
+      status = set(setter)
+      if :noError == status
         #####
         # now, check to see if the message was actually set
         #####
@@ -659,14 +624,16 @@ module NTCIPAccess
         getter.add(oidName: "dmsActivateMsgError", index1: messageMemoryType, index2: messageNumber)
         #getter.add(oidName: "dmsActivateErrorMsgCode", index1: messageMemoryType, index2: messageNumber)
         getter.add(oidName: "dmsMultiSyntaxError", index1: messageMemoryType, index2: messageNumber)
-        if :noError ==  get(getter)
+        status =  get(getter)
+        if :noError ==  status
           activateMsgError = getter["dmsActivateMsgError", messageMemoryType, messageNumber].value.to_i
           multiSyntaxError = getter["dmsMultiSyntaxError", messageMemoryType, messageNumber].value.to_i
+          retValues[0] = :noError
           retValues[1]  = ENUM_dmsActivateMsgError::NONE
           #puts "activateMsgError " + activateMsgError.to_s
           #puts "multiSyntaxError " + multiSyntaxError.to_s
           if ENUM_dmsActivateMsgError::NONE != activateMsgError
-            retValues[0] = :failure
+            retValues[0] = :genError
           end
           retValues[2] = multiSyntaxError
         end
@@ -674,7 +641,6 @@ module NTCIPAccess
       retValues
     end
     def delete_message( messageMemoryType: nil, messageNumber: nil)
-      retVal = :success
 
       if nil == messageMemoryType
         messageMemoryType = @messageMemoryType
@@ -706,13 +672,7 @@ module NTCIPAccess
       end
      setter = SNMPAccess::AccessList.new @oidList
      setter.add(oidName: "dmsMessageStatus", value: ENUM_dmsMessageStatus::NOTUSEDREQ, index1: messageMemoryType, index2: messageNumber)
-     if :noError ==  set(setter)
-       #puts "Delete successful"
-     else
-       #puts "Delete failure"
-       retVal = :failure
-     end
-     retVal
+     status =  set(setter)
     end
   end
   ###########################################################3
@@ -730,21 +690,13 @@ module NTCIPAccess
         puts oid.to_s
         @getter.add(oidName: oid.to_s)
       }
-      if :noError ==  get(@getter)
-         :success
-      else
-        :failure
-      end
+      status =  get(@getter)
     end
 
     def get_single(variableName)
       @getter = SNMPAccess::AccessList.new @oidList
       @getter.add(oidName: variableName)
-      if :noError ==  get(@getter)
-         :success
-      else
-        :failure
-      end
+      status =  get(@getter)
     end
 
     def set_list(varableNameValueList)
@@ -752,21 +704,13 @@ module NTCIPAccess
       varableNameValueList.each { |v|
         @setter.add(oidName: v[0], value: v[1])
       }
-      if :noError ==  set(@setter)
-         :success
-      else
-        :failure
-      end
+      status =  set(@setter)
     end
 
     def set_single(variableName, variableValue)
       @setter = SNMPAccess::AccessList.new @oidList
       @setter.add(oidName: variableName, value: variableValue)
-      if :noError ==  set(@setter)
-         :success
-      else
-        :failure
-      end
+      status =  set(@setter)
     end
 
     def get_value(index=nil)

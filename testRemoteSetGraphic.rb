@@ -1,4 +1,4 @@
-require './ntcipAccess.rb'
+require 'ntcipAccess'
 module Test
   getter = NTCIPAccess::NTCIPGraphics.new(:port => 2230, :host=>'73.207.107.105', :community => 'Public')
   #getter = NTCIPAccess::NTCIPGraphics.new(:port => 163)
@@ -8,14 +8,14 @@ module Test
   result = getter.get_graphic(graphicIndex: 2)
   puts "result " + result.to_s
   case result
-  when :success
+  when :noError
     puts "Success"
     puts "Index " + getter.graphicIndex.to_s
     puts "Name " + getter.graphicName.to_s
     puts "Number " + getter.graphicNumber.to_s
     puts "Status " + getter.graphicStatus.to_s
     puts "Bitmap " + getter.graphicBitmap.to_s
-  when :failure
+  else
     puts "Failure"
   end
 

@@ -1,4 +1,4 @@
-require './ntcipAccess.rb'
+require 'ntcipAccess'
 module Test
   getter = NTCIPAccess::NTCIPMessage.new(:port => 2230, :host=>'73.207.107.105', :community => 'Public')
   #getter = NTCIPAccess::NTCIPMessage.new(:port => 163)
@@ -7,7 +7,7 @@ module Test
 
   result = getter.get_message(messageMemoryType: ENUM_dmsMessageMemoryType::CHANGEABLE, messageNumber: 3)
   case result
-  when :success
+  when :noError
     puts "Success"
     puts "multiString " + getter.messageMultiString.to_s
     puts "owner " + getter.messageOwner.to_s
@@ -16,7 +16,7 @@ module Test
     puts "pixelService " + getter.messagePixelService.to_s
     puts "runTimePriority " + getter.messageRunTimePriority.to_s
     puts "status " + getter.messageStatus.to_s
-  when :failure
+  else
     puts "Failure"
   end
   activateResult = getter.activate_message()
