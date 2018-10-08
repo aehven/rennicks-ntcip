@@ -221,11 +221,7 @@ module NTCIPAccess
               when ENUM_dmsColorScheme::MONOCHROME8BIT
                 bmSize = bmSizeBits
               when ENUM_dmsColorScheme::COLORCLASSIC
-                bmSize = bmSizeBits/2
-                if (bmSizeBytes*2) < bmSizeBits
-                  bmSizeBytes = bmSizeBytes + 1
-                end
-                bmSize = bmBytes;
+                bmSize = bmSizeBits
               when ENUM_dmsColorScheme::COLOR24BIT
                 bmSize = bmSizeBits*3
               else
@@ -717,12 +713,12 @@ module NTCIPAccess
       if nil == index
         vals = []
         @getter.each { |v| 
-          v2 = [v.oidName, v.value]
+          v2 = [v.oidName, v.get_value]
           vals << v2
         }
         vals
       else
-        @getter[index].value
+        @getter[index].get_value
       end
     end
   end

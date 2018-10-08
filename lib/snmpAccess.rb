@@ -268,7 +268,8 @@ module SNMPAccess
       @value
     end
     def value
-      @value
+      #@value
+      get_value
     end
     def set_index1 index1
       @index1 = index1
@@ -400,6 +401,16 @@ module SNMPAccess
     end
   end
   class OIDAccessInt32 < OIDAccessInt
+    def get_value
+      val = @value.to_i
+      if(val >= 2**31)
+         val -= 2**32
+         #return @value - 2**32
+         return val
+      else
+         return @value.to_i
+      end
+    end
   end
   class OIDAccessUInt < OIDAccessInt
   end
