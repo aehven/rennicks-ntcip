@@ -48,11 +48,12 @@ module NTCIPAccess
     end
   end
   class NTCIPAccess
-    def initialize(port: 161, community: 'administrator', host: 'localhost')
+    def initialize(port: 161, community: 'administrator', host: 'localhost', graphicStyle: 'AMSIG')
       SNMPAccess::AccessList.class_variable_set(:@@port, port)
       SNMPAccess::AccessList.class_variable_set(:@@community, community)
       SNMPAccess::AccessList.class_variable_set(:@@host, host)
       SNMPAccess::AccessList.class_variable_set(:@@maxVarbind, 6)
+      @graphicStyle = graphicStyle
       end
     def get oidList
       oidList.get
@@ -62,9 +63,10 @@ module NTCIPAccess
     end
   end
   class NTCIPGraphics < NTCIPAccess
-    def initialize(port: 161, community: 'administrator', host: 'localhost')
+    def initialize(port: 161, community: 'administrator', host: 'localhost', graphicStyle: 'AMSIG')
 
       super
+
 
       @oidList = NTCIPOIDList::TheList.new
       getter = SNMPAccess::AccessList.new @oidList
@@ -124,6 +126,9 @@ module NTCIPAccess
     def graphicBitmap
        @graphicBitmap
     end
+    def graphicType
+       @graphicType
+    end
     def bmp_to_a (bmpFileName)
       theBMP = Bitmap.new(bmpFileName)
       nWidth = theBMP.width
@@ -168,7 +173,7 @@ module NTCIPAccess
       end
       ntcipBM
     end
-    def get_graphic(graphicIndex: nil)
+    def get_graphic(graphicIndex: nil, bitsPerPixelOverride: 1)
       @graphicIndex = graphicIndex
       #puts "graphicIndex " + graphicIndex.to_s
       status = :invalidGraphicIndex
@@ -213,11 +218,16 @@ module NTCIPAccess
               bmSizeBits = @graphicHeight*@graphicWidth
               case @graphicType
               when ENUM_dmsColorScheme::MONOCHROME1BIT
-                bmSizeBytes = bmSizeBits/8
+                #####
+                # American signal uses 2 bits per pixel
+                # for their color signs
+                # so adjust the size here
+                ######
+                bmSizeBytes = (bmSizeBits*bitsPerPixelOverride)/8
                 if (bmSizeBytes*8) < bmSizeBits
                   bmSizeBytes = bmSizeBytes + 1
                 end
-                bmSize = bmSizeBytes;
+                bmSize = bmSizeBytes
               when ENUM_dmsColorScheme::MONOCHROME8BIT
                 bmSize = bmSizeBits
               when ENUM_dmsColorScheme::COLORCLASSIC
@@ -230,10 +240,14 @@ module NTCIPAccess
               #####
               # calculate the number of blocks
               ######
-              bmBlocks = bmSize/@graphicBlockSize
-              if(bmBlocks*@graphicBlockSize) < bmSize
-                bmBlocks = bmBlocks + 1
-              end
+               if 'AMSIG' == @graphicStyle
+                  bmBlocks = 1
+               else
+                  bmBlocks = bmSize/@graphicBlockSize
+                  if(bmBlocks*@graphicBlockSize) < bmSize
+                    bmBlocks = bmBlocks + 1
+                  end
+               end
 
               #####
               # get each block
@@ -318,27 +332,35 @@ module NTCIPAccess
             #####
             # break it up into block sized chunks
             ######
-            nBlocks = imageArray.size/@graphicBlockSize
-            if imageArray.size > (nBlocks*@graphicBlockSize)
-              nBlocks += 1
-            end
-            ####
-            # 0-nBlocks exclusive
-            ######
-            for i in 0...nBlocks
-              nStart = i*@graphicBlockSize
-              nEnd = nStart + ((i+1)*@graphicBlockSize)-1
-              if nEnd > imageArray.size
-                nEnd = imageArray.size
+            if 'AMSIG' == @graphicStyle
+              setter = SNMPAccess::AccessList.new @oidList
+              setter.add(oidName: "dmsGraphicBlockBitmap", value: imageArray, index1: graphicIndex, index2: 1)
+              status = set(setter)
+              if :noError !=  status
+                puts "Error setting block"
               end
-              thisBlock = imageArray[nStart, nEnd]
-              tb2 = []
-              for j in 0...@graphicBlockSize
-                tb2[j] = 0
-              end
-              for j in 0...thisBlock.size
-                tb2[j] = thisBlock[j]
-              end
+            else
+               nBlocks = imageArray.size/@graphicBlockSize
+               if imageArray.size > (nBlocks*@graphicBlockSize)
+               nBlocks += 1
+               end
+               ####
+               # 0-nBlocks exclusive
+               ######
+               for i in 0...nBlocks
+               nStart = i*@graphicBlockSize
+               nEnd = nStart + ((i+1)*@graphicBlockSize)-1
+               if nEnd > imageArray.size
+                  nEnd = imageArray.size
+               end
+               thisBlock = imageArray[nStart, nEnd]
+               tb2 = []
+               for j in 0...@graphicBlockSize
+                  tb2[j] = 0
+               end
+               for j in 0...thisBlock.size
+                  tb2[j] = thisBlock[j]
+               end
               setter = SNMPAccess::AccessList.new @oidList
               #setter.add(oidName: "dmsGraphicBlockBitmap", value: thisBlock, index1: graphicIndex, index2: i+1)
               setter.add(oidName: "dmsGraphicBlockBitmap", value: tb2, index1: graphicIndex, index2: i+1)
@@ -347,6 +369,7 @@ module NTCIPAccess
                 puts "Error setting block"
                 break;
               end
+             end
             end
 
             if :noError == status

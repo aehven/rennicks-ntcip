@@ -248,7 +248,7 @@ module NTCIPOIDList
 
 
       @oidList << SNMPAccess::OIDAccessUInt.new(oidName: "dmsGraphicBlockNumber", size: 2, access: :ro, tableName:  "dmsGraphicBitmapTable", tableColumn: 2, nTableIndexes: 1)
-      @oidList << SNMPAccess::OIDAccessString.new(oidName: "dmsGraphicBlockBitmap", size: 255, access: :rw, tableName: "dmsGraphicBitmapTable", tableColumn: 3, nTableIndexes: 1)
+      @oidList << SNMPAccess::OIDAccessString.new(oidName: "dmsGraphicBlockBitmap", size: 255, access: :rw, tableName: "dmsGraphicBitmapTable", tableColumn: 3, nTableIndexes: 2)
 #####
 ## 1201v03
 #####
