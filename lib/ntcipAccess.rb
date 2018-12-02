@@ -13,22 +13,53 @@ module NTCIPAccess
   class SNMPError < StandardError
   end
   class MessageActivationCode
-    def initialize( messageMemoryType:, messageNumber:, messageCRC:, duration: nil, activatePriority: nil, sourceAddress: nil)
-      @messageMemoryType = messageMemoryType
-      @messageNumber = messageNumber
-      @messageCRC = messageCRC
-      @duration = duration
-      if nil == @duration
-        @duration = 65535
+    def initialize( octetString: nil, messageMemoryType: ENUM_dmsMessageMemoryType::CHANGEABLE, messageNumber: 1, messageCRC: 0, duration: nil, activatePriority: nil, sourceAddress: nil)
+      if nil == octetString
+        @messageMemoryType = messageMemoryType
+        @messageNumber = messageNumber
+        @messageCRC = messageCRC
+        @duration = duration
+        if nil == @duration
+          @duration = 65535
+        end
+        @activatePriority = activatePriority
+        if nil == @activatePriority
+          @activatePriority = 1
+        end
+        @sourceAddress = sourceAddress
+        if nil == @sourceAddress
+          @sourceAddress = (127<<24) + 1
+        end
+       else
+         #####
+         # initialize from OctetString
+         #####
+         setArray = octetString.bytes.to_a
+         @duration = (setArray[0]*256)+setArray[1]
+         @activationPriority = setArray[2]
+         @messageMemoryType = setArray[3]
+         @messageNumber = (setArray[4]*256)+setArray[5]
+         @messageCRC = (setArray[6]*256) + setArray[7]
+         @sourceAddress = (setArray[8]*16777216)+( setArray[9]*65536)+(setArray[10]*256)+setArray[11]
       end
-      @activatePriority = activatePriority
-      if nil == @activatePriority
-        @activatePriority = 1
-      end
-      @sourceAddress = sourceAddress
-      if nil == @sourceAddress
-        @sourceAddress = (127<<24) + 1
-      end
+    end
+    def messageMemoryType
+      @messageMemoryType
+    end
+    def messageNumber
+      @messageNumber
+    end
+    def messageCRC
+      @messageCRC
+    end
+    def activatePriority
+      @activatePriority
+    end
+    def duration
+      @duration
+    end
+    def sourceAddress
+      @sourceAddress
     end
     def get_value
       value = []
@@ -45,7 +76,20 @@ module NTCIPAccess
       value << ((@sourceAddress >> 8) & 0xff)
       value << (@sourceAddress & 0xff)
       value.pack('C*')
-    end
+   end
+   def ==(otherMessageActivationCode)
+      retVal = true
+      if @messageMemoryType != otherMessageActivationCode.messageMemoryType
+        retVal = false
+      elsif @messageNumber != otherMessageActivationCode.messageNumber
+        retVal = false
+      elsif @messageCRC != otherMessageActivationCode.messageCRC
+        retVal = false
+      elsif @sourceAddress != otherMessageActivationCode.sourceAddress
+        retVal = false
+      end
+      retVal
+   end
   end
   class NTCIPAccess
     def initialize(port: 161, community: 'administrator', host: 'localhost', graphicStyle: 'AMSIG')
@@ -177,6 +221,12 @@ module NTCIPAccess
       @graphicIndex = graphicIndex
       #puts "graphicIndex " + graphicIndex.to_s
       status = :invalidGraphicIndex
+      #####
+      # DEH 11/17/18
+      # if we failed to connect to the sign
+      # we won't have @graphicMaxEntries
+      # we need to error out here, or before here
+      ######
       if (graphicIndex > 0) && (graphicIndex <= @graphicMaxEntries)
            getter = SNMPAccess::AccessList.new @oidList
            getter.add(oidName: "dmsGraphicNumber", index1: graphicIndex)
@@ -297,6 +347,12 @@ module NTCIPAccess
       # set status to modifying
       ######
       status = :invalidGraphicIndex
+      #####
+      # DEH 11/17/18
+      # if we failed to connect to the sign
+      # we won't have @graphicMaxEntries
+      # we need to error out here, or before here
+      ######
       if (graphicIndex > 0) && (graphicIndex <= @graphicMaxEntries)
         #####
         # set the status to modifying
@@ -631,17 +687,19 @@ module NTCIPAccess
         end
       end
       messageActivationCode = MessageActivationCode.new(messageMemoryType: messageMemoryType, messageNumber: messageNumber, messageCRC: messageCRC, duration: duration, activatePriority: activatePriority, sourceAddress: sourceAddress)
+puts "activatePriority "+activatePriority.to_s
 
      setter = SNMPAccess::AccessList.new @oidList
      setter.add(oidName: "dmsActivateMessage", value: messageActivationCode.get_value, index1: messageMemoryType, index2: messageNumber)
       status = set(setter)
-      if :noError == status
+puts "status "+status.to_s+"["+messageActivationCode.get_value.length.to_s+"]"
+      case status
+      when :noError
         #####
         # now, check to see if the message was actually set
         #####
         getter = SNMPAccess::AccessList.new @oidList
         getter.add(oidName: "dmsActivateMsgError", index1: messageMemoryType, index2: messageNumber)
-        #getter.add(oidName: "dmsActivateErrorMsgCode", index1: messageMemoryType, index2: messageNumber)
         getter.add(oidName: "dmsMultiSyntaxError", index1: messageMemoryType, index2: messageNumber)
         status =  get(getter)
         if :noError ==  status
@@ -649,15 +707,38 @@ module NTCIPAccess
           multiSyntaxError = getter["dmsMultiSyntaxError", messageMemoryType, messageNumber].value.to_i
           retValues[0] = :noError
           retValues[1]  = ENUM_dmsActivateMsgError::NONE
-          #puts "activateMsgError " + activateMsgError.to_s
-          #puts "multiSyntaxError " + multiSyntaxError.to_s
           if ENUM_dmsActivateMsgError::NONE != activateMsgError
             retValues[0] = :genError
           end
           retValues[2] = multiSyntaxError
         end
-      end
-      retValues
+      when :timeOut
+         #####
+         # Amsig response may have been corrupted
+         # so try to verify the activate message
+         # by getting the dmsActivateMessageCode
+         # and the current dmsMessageMultiString
+         # and comparing to what we sent
+         #####
+         getter = SNMPAccess::AccessList.new @oidList
+         getter.add(oidName: "dmsActivateMessage")
+         getter.add(oidName: "dmsMessageMultiString", index1: 5, index2: 1)
+         getter.add(oidName: "dmsMessageMultiString", index1: messageMemoryType, index2: messageNumber)
+         status =  get(getter)
+         retValues[0] = :timeOut
+         if :noError ==  status
+          currentMessageActivationCode = MessageActivationCode.new(octetString: getter["dmsActivateMessage"].get_value)
+         
+          if messageActivationCode == currentMessageActivationCode
+             if getter["dmsMessageMultiString", 5, 1].to_s == getter["dmsMessageMultiString", messageMemoryType, messageNumber].to_s
+               retValues[0] = :noError
+               retValues[1]  = ENUM_dmsActivateMsgError::NONE
+             end
+          end
+         end
+         retValues[0]
+     end
+        retValues
     end
     def delete_message( messageMemoryType: nil, messageNumber: nil)
 

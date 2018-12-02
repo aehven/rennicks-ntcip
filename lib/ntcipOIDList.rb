@@ -80,7 +80,7 @@ module NTCIPOIDList
       @oidList << SNMPAccess::OIDAccessEnum.new(oidName: "dmsValidateMessageError", size: 1, access: :ro)
       @oidList << SNMPAccess::OIDAccessEnum.new(oidName: "dmsControlMode", size: 1, access: :rw)
       @oidList << SNMPAccess::OIDAccessUInt.new(oidName: "dmsSWReset", size: 2, access: :rw)
-      @oidList << SNMPAccess::OIDAccessMessageActivationCode.new(oidName: "dmsActivateMessage", size: 0, access: :rw)
+      @oidList << SNMPAccess::OIDAccessMessageActivationCode.new(oidName: "dmsActivateMessage", size: 12, access: :rw)
       @oidList << SNMPAccess::OIDAccessUInt.new(oidName: "dmsMessageTimeRemaining", size: 2, access: :rw)
       @oidList << SNMPAccess::OIDAccessMessageIDCode.new(oidName: "dmsMsgTableSource", size: 0, access: :ro)
       @oidList << SNMPAccess::OIDAccessIPAddress.new(oidName: "dmsMsgRequesterID", size: 0, access: :ro)

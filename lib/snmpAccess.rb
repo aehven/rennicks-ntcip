@@ -42,7 +42,13 @@ module SNMPAccess
       @oidList = oidList
     end
     def add(oidName: "NULL", value: nil, index1: -1, index2: -1)
-      classOrig = @oidList.locate_oid(oidName)
+      #####
+      # caller may have included index(es)
+      # appended to oidName
+      # so parse them out here
+      #####
+      nameSplit = oidName.split(".")
+      classOrig = @oidList.locate_oid(nameSplit[0])
       if(nil == classOrig)
         raise UnknownOIDError, oidName+" not on list of known OIDs "
       end
@@ -51,6 +57,17 @@ module SNMPAccess
           raise AccessError, oidName+" is read only "
         end
       end
+      if(nil != nameSplit[1])
+         if(-1 == index1)
+            index1 = nameSplit[1].to_i
+         end
+      end
+      if(nil != nameSplit[2])
+         if(-1 == index2)
+            index2 = nameSplit[2].to_i
+         end
+      end
+      classDup = classOrig.dup
       classDup = classOrig.dup
       classDup.set_value  value
       classDup.set_index1  index1
@@ -61,8 +78,24 @@ module SNMPAccess
       if key.kind_of?(Integer)
         return @dataArray[key]
       else
+        #####
+        # caller may have included index(es)
+        # appended to oidName
+        # so parse them out here
+        #####
+        nameSplit = key.split(".")
+        if(nil != nameSplit[1])
+           if(-1 == index1)
+              index1 = nameSplit[1].to_i
+           end
+        end
+        if(nil != nameSplit[2])
+           if(-1 == index2)
+              index2 = nameSplit[2].to_i
+           end
+        end
         for i in 0...@dataArray.length
-          return @dataArray[i] if (key == @dataArray[i].name) && (index1 == @dataArray[i].get_index1) && (index2 == @dataArray[i].get_index2)
+          return @dataArray[i] if (nameSplit[0] == @dataArray[i].name) && (index1 == @dataArray[i].get_index1) && (index2 == @dataArray[i].get_index2)
         end
       end
       return nil
