@@ -591,7 +591,7 @@ module NTCIPAccess
       end
       status
     end
-    def set_message(messageMemoryType:, messageNumber:, messageMultiString: "", messageOwner: "local", messageBeacon: 0, messagePixelService: 0, messageRunTimePriority: 0)
+    def set_message(messageMemoryType:, messageNumber:, messageMultiString: "", messageOwner: "local", messageBeacon: 0, messagePixelService: 0, messageRunTimePriority: 1)
       @messageMemoryType = messageMemoryType
       @messageNumber = messageNumber
       @messageMultiString = messageMultiString
@@ -787,7 +787,7 @@ puts "status "+status.to_s+"["+messageActivationCode.get_value.length.to_s+"]"
     def get_list(variableNameList)
       @getter = SNMPAccess::AccessList.new @oidList
       variableNameList.each { |oid|
-        puts oid.to_s
+        #puts oid.to_s
         @getter.add(oidName: oid.to_s)
       }
       status =  get(@getter)
