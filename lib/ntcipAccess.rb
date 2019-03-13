@@ -24,7 +24,16 @@ module NTCIPAccess
         end
         @activatePriority = activatePriority
         if nil == @activatePriority
-          @activatePriority = 1
+          #####
+          # 255 is highest priority
+          #####
+          @activatePriority = 255
+        end
+        #####
+        # Amsig signs react badly to priority of 1
+        #####
+        if 1 == @activatePriority
+           @activatePriority = 255
         end
         @sourceAddress = sourceAddress
         if nil == @sourceAddress

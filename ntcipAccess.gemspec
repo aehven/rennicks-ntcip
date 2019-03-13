@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
   s.email = %q{doug@harbert.org}
   s.description = %q{NTCIP access code}
   s.homepage = %q{}
-  s.version = "0.0.6"
+  s.version = "0.0.7"
   s.date = %q{2018-08-24}
   s.summary = %q{NTCIP Access}
   s.files = [
